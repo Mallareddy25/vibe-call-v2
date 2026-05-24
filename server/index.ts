@@ -122,12 +122,16 @@ app.post('/api/auth/login', async (req, res) => {
 
     if (isSouth) {
       if (transporter) {
-        await transporter.sendMail({
-          from: '"VibeCall Security" <security@vibecall.com>',
-          to: user.email,
-          subject: `VibeCall Login OTP`,
-          text: `Your OTP for login is ${otp}`
-        });
+        try {
+          await transporter.sendMail({
+            from: '"VibeCall Security" <security@vibecall.com>',
+            to: user.email,
+            subject: `VibeCall Login OTP`,
+            text: `Your OTP for login is ${otp}`
+          });
+        } catch (err) {
+          console.error("Ethereal Mock Email blocked by Render, skipping...");
+        }
       }
       console.log(`[MOCK EMAIL OTP] Sent OTP ${otp} to Email ${user.email}`);
       res.json({ requireOtp: true, via: 'email', otp, message: `OTP sent to email ${user.email}` });
@@ -159,25 +163,18 @@ app.post('/api/premium/upgrade', async (req, res) => {
     user.isPremium = (plan === 'gold'); // Gold unlocks unlimited downloads
     await user.save();
     
-    try {
-      if (transporter) {
-        const price = plan === 'bronze' ? '₹10' : plan === 'silver' ? '₹50' : '₹100';
+    if (transporter) {
+      try {
         const info = await transporter.sendMail({
-          from: '"VibeCall Billing" <billing@vibecall.com>',
+          from: '"VibeCall Premium" <billing@vibecall.com>',
           to: user.email,
-          subject: `Invoice: VibeCall ${plan.toUpperCase()} Plan`,
-          html: `<h3>Hello ${user.name},</h3>
-                 <p>Your payment was successful. Welcome to the <b>${plan.toUpperCase()}</b> plan!</p>
-                 <br/>
-                 <b>Invoice Details:</b><br/>
-                 Plan: ${plan.toUpperCase()}<br/>
-                 Amount Paid: ${price}<br/>
-                 <p>Enjoy your extended viewing limits!</p>`
+          subject: `Welcome to VibeCall ${plan.toUpperCase()}!`,
+          html: `<h2>Thank you for your purchase!</h2><p>Your ${plan} plan is now active.</p>`
         });
         console.log('📧 INVOICE EMAIL SENT! Preview URL: %s', nodemailer.getTestMessageUrl(info));
+      } catch (emailError) {
+        console.error("Failed to send email invoice:", emailError);
       }
-    } catch (emailError) {
-      console.error("Failed to send email invoice:", emailError);
     }
 
     res.json({ message: "Upgraded!", user: { id: user.id, name: user.name, email: user.email, profilePicture: user.profilePicture, isPremium: user.isPremium, plan: user.plan } });
