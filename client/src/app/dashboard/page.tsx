@@ -724,7 +724,7 @@ export default function Dashboard() {
                <div className="w-6 flex justify-center"><FolderDown size={22} className={activeTab === 'downloads' ? 'fill-white' : ''}/></div> Downloads
              </button>
              <button onClick={() => setActiveTab('history')} className={`w-full flex items-center gap-5 px-3 py-2.5 rounded-xl text-sm ${activeTab === 'history' ? 'bg-[#272727] font-bold' : 'hover:bg-[#272727]'}`}>
-               <div className="w-6 flex justify-center"><History size={22} className={activeTab === 'history' ? 'fill-white' : ''}/></div> Library
+               <div className="w-6 flex justify-center"><History size={22} className={activeTab === 'history' ? 'fill-white' : ''}/></div> Call History
              </button>
              <button onClick={() => setActiveTab('premium')} className={`w-full flex items-center gap-5 px-3 py-2.5 rounded-xl text-sm ${activeTab === 'premium' ? 'bg-[#272727] font-bold text-amber-500' : 'hover:bg-[#272727]'}`}>
                <div className="w-6 flex justify-center"><Crown size={22} className={activeTab === 'premium' ? 'text-amber-500 fill-amber-500' : ''}/></div> Premium
@@ -911,26 +911,34 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {history.map((h: any) => (
-                    <tr key={h.id} className="hover:bg-white/5 transition-colors">
-                      <td className="px-8 py-4 flex items-center gap-3">
-                         <img src={h.callerId === user.id ? h.receiver?.profilePicture : h.caller?.profilePicture} className="w-10 h-10 rounded-full border border-white/10" alt="partner" />
-                         <div>
-                           <p className="font-bold text-white">{h.callerId === user.id ? h.receiver?.name : h.caller?.name}</p>
-                           <p className={`text-[10px] uppercase font-black ${h.callerId === user.id ? 'text-blue-500' : 'text-green-500'}`}>
-                             {h.callerId === user.id ? '↗ Outgoing' : '↙ Incoming'}
-                           </p>
-                         </div>
-                      </td>
-                      <td className="px-8 py-6 text-sm text-gray-400">{new Date(h.date).toLocaleString()}</td>
-                      <td className="px-8 py-6 font-mono text-xs">{h.duration}s</td>
-                      <td className="px-8 py-6 text-right">
-                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${h.wasRecorded ? 'bg-red-600/20 text-red-500' : 'bg-white/5 text-gray-500'}`}>
-                          {h.wasRecorded ? 'Recorded' : 'Normal'}
-                        </span>
+                  {history.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-8 py-10 text-center text-gray-500 font-medium">
+                        No call history found. Call someone to start your history!
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    history.map((h: any) => (
+                      <tr key={h.id} className="hover:bg-white/5 transition-colors">
+                        <td className="px-8 py-4 flex items-center gap-3">
+                           <img src={h.callerId === user.id ? h.receiver?.profilePicture : h.caller?.profilePicture} className="w-10 h-10 rounded-full border border-white/10" alt="partner" />
+                           <div>
+                             <p className="font-bold text-white">{h.callerId === user.id ? h.receiver?.name : h.caller?.name}</p>
+                             <p className={`text-[10px] uppercase font-black ${h.callerId === user.id ? 'text-blue-500' : 'text-green-500'}`}>
+                               {h.callerId === user.id ? '↗ Outgoing' : '↙ Incoming'}
+                             </p>
+                           </div>
+                        </td>
+                        <td className="px-8 py-6 text-sm text-gray-400">{new Date(h.date).toLocaleString()}</td>
+                        <td className="px-8 py-6 font-mono text-xs">{h.duration}s</td>
+                        <td className="px-8 py-6 text-right">
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${h.wasRecorded ? 'bg-red-600/20 text-red-500' : 'bg-white/5 text-gray-500'}`}>
+                            {h.wasRecorded ? 'Recorded' : 'Normal'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
