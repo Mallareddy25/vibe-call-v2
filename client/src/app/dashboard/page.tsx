@@ -704,6 +704,26 @@ export default function Dashboard() {
          </div>
       </header>
 
+      {/* Mobile Top Navigation (Visible only on small screens) */}
+      <div className="md:hidden flex items-center gap-2 px-4 py-3 overflow-x-auto shrink-0 border-b border-white/10 [&::-webkit-scrollbar]:hidden">
+        {[
+          { id: 'home', label: 'Home' },
+          { id: 'friends', label: 'Friends' },
+          { id: 'requests', label: 'Requests' },
+          { id: 'downloads', label: 'Downloads' },
+          { id: 'history', label: 'History' },
+          { id: 'premium', label: 'Premium' }
+        ].map(tab => (
+          <button 
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-4 py-1.5 rounded-full whitespace-nowrap text-sm font-medium transition-colors ${activeTab === tab.id ? (tab.id === 'premium' ? 'bg-amber-500 text-black' : 'bg-white text-black') : (tab.id === 'premium' ? 'bg-amber-500/10 text-amber-500' : 'bg-white/10 text-white')} hover:opacity-80`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Main Body */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
