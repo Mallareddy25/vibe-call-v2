@@ -498,8 +498,8 @@ export default function Dashboard() {
     e.preventDefault();
     if (!newComment.trim()) return;
     
-    // Block special characters (allow only letters, numbers, spaces, and basic punctuation)
-    if (/[^a-zA-Z0-9\s.,!?]/.test(newComment)) {
+    // Block special characters (allow only unicode letters, numbers, spaces, and basic punctuation)
+    if (/[^\p{L}\p{N}\s.,!?]/u.test(newComment)) {
       alert("Comment Blocked: Special characters are not allowed to maintain a clean environment.");
       return;
     }
