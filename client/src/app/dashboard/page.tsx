@@ -36,6 +36,7 @@ let localStream: MediaStream;
 let screenStream: MediaStream | null = null;
 let mediaRecorder: MediaRecorder | null = null;
 let recordedChunks: Blob[] = [];
+let iceCandidateQueue: any[] = [];
 
 export default function Dashboard() {
   const { user, isAuthenticated } = useSelector((state: RootState) => state.auth);
@@ -167,13 +168,21 @@ export default function Dashboard() {
 
     socket.on('call-answered', async ({ answer }: any) => {
       await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      while (iceCandidateQueue.length > 0) {
+        const candidate = iceCandidateQueue.shift();
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error(e));
+      }
       startTimer();
     });
 
     socket.on('ice-candidate', async ({ candidate }: any) => {
       if (peerConnection && peerConnection.signalingState !== 'closed') {
         try {
-          await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          if (peerConnection.remoteDescription && peerConnection.remoteDescription.type) {
+            await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          } else {
+            iceCandidateQueue.push(candidate);
+          }
         } catch (e) {
           console.error("Failed to add ICE candidate", e);
         }
@@ -399,7 +408,15 @@ export default function Dashboard() {
   };
 
   const initWebRTC = async (targetUserId: string, isCaller: boolean, offer?: any) => {
-    peerConnection = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    peerConnection = new RTCPeerConnection({ 
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+      ] 
+    });
 
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
@@ -423,6 +440,10 @@ export default function Dashboard() {
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
       socket.emit('answer-call', { to: targetUserId, answer });
+      while (iceCandidateQueue.length > 0) {
+        const candidate = iceCandidateQueue.shift();
+        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)).catch(e => console.error(e));
+      }
       startTimer();
     }
   };
@@ -447,6 +468,7 @@ export default function Dashboard() {
     if (localStream) localStream.getTracks().forEach(t => t.stop());
     if (screenStream) screenStream.getTracks().forEach(t => t.stop());
     if (peerConnection) peerConnection.close();
+    iceCandidateQueue = [];
     
     const targetId = currentCall?._id || incomingCall?.from;
     if (!remote && targetId) {
