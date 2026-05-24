@@ -154,7 +154,7 @@ export default function Dashboard() {
     script.src = 'https://checkout.razorpay.com/v1/checkout.js';
     document.body.appendChild(script);
 
-    socket = io('http://127.0.0.1:8080');
+    socket = io('https://vibe-call-server.onrender.com');
     socket.emit('register-user', user.id);
 
     socket.on('incoming-call', (data: any) => {
