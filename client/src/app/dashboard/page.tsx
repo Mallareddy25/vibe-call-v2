@@ -777,21 +777,17 @@ export default function Dashboard() {
 
         {/* Main Content Area */}
         <main className="flex-1 bg-[#0f0f0f] flex flex-col overflow-hidden">
-           {/* Category Pills Header */}
-           <div className="flex items-center gap-3 px-6 py-3 overflow-x-auto whitespace-nowrap scrollbar-hide shrink-0">
-             {['All', 'Music', 'Gaming', 'Movies', 'News', 'Sports', 'Technology', 'Comedy', 'Education', 'Science', 'Travel', 'Food', 'Fashion'].map((cat) => (
-               <button 
-                 key={cat} 
-                 onClick={() => setActiveCategory(cat)}
-                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeCategory === cat ? 'bg-white text-black hover:bg-gray-200' : 'bg-[#272727] text-white hover:bg-[#3f3f3f]'}`}
-               >
-                 {cat}
-               </button>
-             ))}
-           </div>
-           
-           {/* Scrollable Content */}
-           <div className="flex-1 p-6 overflow-y-auto">
+        {activeTab === 'home' && (
+          <div className="flex items-center gap-3 px-6 py-3 overflow-x-auto whitespace-nowrap scrollbar-hide shrink-0">
+            {['All', 'Music', 'Gaming', 'Movies', 'News', 'Sports', 'Technology', 'Comedy', 'Education', 'Science', 'Travel', 'Food', 'Fashion'].map(cat => (
+              <button key={cat} onClick={() => setActiveCategory(cat)} className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeCategory === cat ? 'bg-white text-black hover:bg-gray-200' : 'bg-[#272727] text-white hover:bg-[#3f3f3f]'}`}>
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+        
+        <div className="flex-1 p-6 overflow-y-auto">
 
         {activeTab === 'premium' && (
           <section className="animate-in fade-in zoom-in-95 duration-500 flex flex-col items-center justify-start h-full text-center max-w-5xl mx-auto py-4">
@@ -1345,14 +1341,15 @@ export default function Dashboard() {
                   ))}
                   {currentComments.length === 0 && <p className="text-center text-gray-500 text-sm mt-10">No comments yet.</p>}
                </div>
-               <form onSubmit={handleAddComment} className="pt-4 border-t border-white/10 mt-auto">
+               <form onSubmit={handleAddComment} className="pt-4 border-t border-white/10 mt-auto flex gap-2">
                  <input 
                    type="text" 
                    value={newComment}
                    onChange={e => setNewComment(e.target.value)}
                    placeholder="Add a clean comment..." 
-                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-red-500 transition-colors" 
+                   className="flex-1 bg-[#151515] border border-white/5 px-4 py-3 rounded-2xl outline-none focus:border-red-600 transition-colors text-sm"
                  />
+                 <button type="submit" disabled={!newComment.trim()} className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2 rounded-2xl font-bold text-sm transition-colors">Send</button>
                </form>
             </div>
           )}
