@@ -211,6 +211,18 @@ app.post('/api/downloads/check', async (req, res) => {
   }
 });
 
+app.post('/api/translate', async (req, res) => {
+  try {
+    const { text, targetLang } = req.body;
+    const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=Autodetect|${targetLang}`);
+    const data: any = await response.json();
+    res.json({ translatedText: data.responseData.translatedText });
+  } catch (error) {
+    console.error("Translation Error:", error);
+    res.status(500).json({ error: "Translation failed" });
+  }
+});
+
 app.post('/api/downloads/save', async (req, res) => {
   try {
     const { userId, callId, fileName } = req.body;

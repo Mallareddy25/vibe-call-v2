@@ -581,10 +581,10 @@ export default function Dashboard() {
       return { ...prev, [vid]: nextArr };
     });
     try {
-      const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=Autodetect|${targetLang}`);
-      const data = await res.json();
+      const res = await api.post('/translate', { text, targetLang });
+      const translatedText = res.data.translatedText;
       setCommentsByVideo(prev => {
-        const nextArr = (prev[vid] || []).map(c => c.id === id ? { ...c, translatedText: data.responseData.translatedText, isTranslating: false } : c);
+        const nextArr = (prev[vid] || []).map(c => c.id === id ? { ...c, translatedText: translatedText, isTranslating: false } : c);
         socket.emit('sync-comments', { videoId: vid, comments: nextArr });
         return { ...prev, [vid]: nextArr };
       });
