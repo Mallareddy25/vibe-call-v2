@@ -187,7 +187,7 @@ app.post('/api/downloads/check', async (req, res) => {
     const { userId } = req.body;
     const user: any = await User.findByPk(userId);
     if (!user) return res.json({ allowed: false, message: "User not found" });
-    if (user.isPremium) return res.json({ allowed: true });
+    if (user.plan === 'gold') return res.json({ allowed: true });
     
     // Bulletproof: Count actual downloads for today
     const today = new Date();
@@ -200,8 +200,12 @@ app.post('/api/downloads/check', async (req, res) => {
       }
     });
 
-    if (count >= 1) {
-      return res.json({ allowed: false, message: "Free limit reached (1/day). Upgrade to Premium for unlimited downloads!" });
+    let limit = 0;
+    if (user.plan === 'bronze') limit = 1;
+    if (user.plan === 'silver') limit = 5;
+
+    if (count >= limit) {
+      return res.json({ allowed: false, message: `Limit reached (${limit}/day for ${user.plan} plan). Upgrade to Premium for more downloads!` });
     }
     res.json({ allowed: true });
   } catch (error) {
