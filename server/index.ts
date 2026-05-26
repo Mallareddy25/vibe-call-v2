@@ -164,17 +164,16 @@ app.post('/api/premium/upgrade', async (req, res) => {
     await user.save();
     
     if (transporter) {
-      try {
-        const info = await transporter.sendMail({
-          from: '"VibeCall Premium" <billing@vibecall.com>',
-          to: user.email,
-          subject: `Welcome to VibeCall ${plan.toUpperCase()}!`,
-          html: `<h2>Thank you for your purchase!</h2><p>Your ${plan} plan is now active.</p>`
-        });
+      transporter.sendMail({
+        from: '"VibeCall Premium" <billing@vibecall.com>',
+        to: user.email,
+        subject: `Welcome to VibeCall ${plan.toUpperCase()}!`,
+        html: `<h2>Thank you for your purchase!</h2><p>Your ${plan} plan is now active.</p>`
+      }).then((info: any) => {
         console.log('📧 INVOICE EMAIL SENT! Preview URL: %s', nodemailer.getTestMessageUrl(info));
-      } catch (emailError) {
+      }).catch((emailError: any) => {
         console.error("Failed to send email invoice:", emailError);
-      }
+      });
     }
 
     res.json({ message: "Upgraded!", user: { id: user.id, name: user.name, email: user.email, profilePicture: user.profilePicture, isPremium: user.isPremium, plan: user.plan } });

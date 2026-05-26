@@ -138,7 +138,8 @@ export default function Dashboard() {
     { id: 'v8', title: 'A Day in the Life of a Software Engineer', channel: 'Code Life', views: '2.1M views', date: '2 months ago', thumbnail: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=yt8', category: 'Technology' },
     { id: 'v9', title: 'Global News: Market Update', channel: 'World News', views: '120K views', date: '1 hour ago', thumbnail: 'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&q=80', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=yt9', category: 'News' },
     { id: 'v10', title: 'Standup Comedy Special 2026', channel: 'Laugh Out Loud', views: '400K views', date: '1 week ago', thumbnail: 'https://images.unsplash.com/photo-1527224857830-43a7aaf85198?w=800&q=80', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=yt10', category: 'Comedy' }
-  ];
+  ].filter(v => activeCategory === 'All' || v.category === activeCategory)
+  .filter(v => v.title.toLowerCase().includes(searchQuery.toLowerCase()) || v.channel.toLowerCase().includes(searchQuery.toLowerCase()));
 
   useEffect(() => {
     setMounted(true);
@@ -371,8 +372,24 @@ export default function Dashboard() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (activeTab !== 'friends' && activeTab !== 'home') {
+      setActiveTab('friends');
+    }
     const res = await api.get(`/users/search?query=${searchQuery}&userId=${user.id}`);
     setSearchResults(res.data);
+  };
+
+  const handleVoiceSearch = () => {
+    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.onresult = (e: any) => {
+        setSearchQuery(e.results[0][0].transcript);
+      };
+      recognition.start();
+    } else {
+      alert("Voice search is not supported in this browser.");
+    }
   };
 
   const sendFriendRequest = async (friendId: string) => {
@@ -685,7 +702,7 @@ export default function Dashboard() {
              <input type="text" placeholder="Search" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full bg-transparent px-5 py-2 outline-none text-sm placeholder-gray-400" />
              <button type="submit" className="bg-[#222222] px-5 py-2.5 border-l border-[#303030] hover:bg-[#303030] transition-colors"><Search size={18} className="text-gray-300" /></button>
            </form>
-           <button className="bg-[#181818] p-2.5 rounded-full hover:bg-[#303030] transition-colors"><Mic size={20} /></button>
+           <button onClick={handleVoiceSearch} className="bg-[#181818] p-2.5 rounded-full hover:bg-[#303030] transition-colors"><Mic size={20} /></button>
          </div>
          {/* Right: User */}
          <div className="flex items-center gap-4">
